@@ -1,16 +1,18 @@
 from core.db import get_conn
 from core.models import Expense
+from datetime import datetime
 
 
 def add_expense(expense: Expense):
     conn = get_conn()
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     conn.execute(
         """
-        INSERT INTO expenses(amount, category, note)
-        VALUES (?, ?, ?)
+        INSERT INTO expenses(ts, amount, category, note)
+        VALUES (?, ?, ?, ?)
         """,
-        (expense.amount, expense.category, expense.note)
+        (ts, expense.amount, expense.category, expense.note)
     )
 
     conn.commit()
@@ -34,6 +36,7 @@ def get_today_expenses():
 
 def get_month_summary():
     conn = get_conn()
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     rows = conn.execute("""
         SELECT

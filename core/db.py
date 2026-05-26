@@ -18,7 +18,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS expenses (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-        ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+        ts TEXT NOT NULL,
 
         amount REAL NOT NULL,
 
