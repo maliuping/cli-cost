@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import typer
 
 from core.db import init_db
@@ -26,11 +28,13 @@ init_db()
 def add(
     amount: float,
     category: str,
-    note: str = ""
+    note_parts: Optional[List[str]] = typer.Argument(None)
 ):
     """
     Add expense
     """
+
+    note = " ".join(note_parts or [])
 
     expense = Expense(
         amount=amount,
@@ -83,45 +87,45 @@ def list(limit: int = 20):
 # m 32 lunch 麦当劳
 # -----------------------------
 
-@app.callback(invoke_without_command=True)
-def main(
-    ctx: typer.Context,
-    amount: float = None,
-    category: str = None,
-    note: str = ""
-):
-    """
-    Quick add mode
-    """
-
-    if ctx.invoked_subcommand:
-        return
-
-    if amount is None or category is None:
-        typer.echo("""
-Usage:
-
-  m 32 lunch 麦当劳
-
-Commands:
-
-  m today
-  m month
-  m list
-""")
-        raise typer.Exit()
-
-    expense = Expense(
-        amount=amount,
-        category=category,
-        note=note
-    )
-
-    add_expense(expense)
-
-    typer.echo(
-        f"Added: {amount} {category} {note}"
-    )
+# @app.callback(invoke_without_command=True)
+# def main(
+#     ctx: typer.Context,
+#     amount: float = None,
+#     category: str = None,
+#     note: str = ""
+# ):
+#     """
+#     Quick add mode
+#     """
+#
+#     if ctx.invoked_subcommand:
+#         return
+#
+#     if amount is None or category is None:
+#         typer.echo("""
+# Usage:
+#
+#   m 32 lunch 麦当劳
+#
+# Commands:
+#
+#   m today
+#   m month
+#   m list
+# """)
+#         raise typer.Exit()
+#
+#     expense = Expense(
+#         amount=amount,
+#         category=category,
+#         note=note
+#     )
+#
+#     add_expense(expense)
+#
+#     typer.echo(
+#         f"Added: {amount} {category} {note}"
+#     )
 
 
 if __name__ == "__main__":
