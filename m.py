@@ -13,8 +13,8 @@ from core.service import (
 
 from core.ui import (
     print_today,
-    # print_month,
-    # print_all
+    print_month,
+    print_all
 )
 
 app = typer.Typer(
