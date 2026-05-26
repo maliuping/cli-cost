@@ -8,7 +8,9 @@ from core.service import (
     add_expense,
     get_today_expenses,
     get_month_summary,
-    get_all_expenses
+    get_all_expenses,
+    delete_expense,
+    get_expense_by_id
 )
 
 from core.ui import (
@@ -80,6 +82,33 @@ def list(limit: int = 20):
     rows = get_all_expenses(limit)
 
     print_all(rows)
+
+
+@app.command()
+def delete(expense_id: int):
+    """
+    Delete expense by id
+    """
+
+    row = get_expense_by_id(expense_id)
+
+    if not row:
+        print("Expense not found")
+        return
+
+    confirm = input(
+        f"Delete #{row['id']} "
+        f"{row['category']} "
+        f"{row['amount']} ? [y/N] "
+    )
+
+    if confirm.lower() != "y":
+        print("Cancelled")
+        return
+
+    delete_expense(expense_id)
+
+    print("Deleted")
 
 
 # -----------------------------

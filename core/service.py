@@ -37,6 +37,7 @@ def get_month_summary():
 
     rows = conn.execute("""
         SELECT
+            id,
             category,
             ROUND(SUM(amount), 2) as total
         FROM expenses
@@ -64,3 +65,29 @@ def get_all_expenses(limit=50):
     conn.close()
 
     return rows
+
+
+def get_expense_by_id(expense_id: int):
+    conn = get_conn()
+
+    row = conn.execute("""
+        SELECT *
+        FROM expenses
+        WHERE id = ?
+    """, (expense_id,)).fetchone()
+
+    conn.close()
+
+    return row
+
+
+def delete_expense(expense_id: int):
+    conn = get_conn()
+
+    conn.execute("""
+        DELETE FROM expenses
+        WHERE id = ?
+    """, (expense_id,))
+
+    conn.commit()
+    conn.close()

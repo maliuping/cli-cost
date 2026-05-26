@@ -8,6 +8,7 @@ console = Console()
 def print_today(rows):
     table = Table(title="Today's Expenses")
 
+    table.add_column("ID", style="cyan")
     table.add_column("Time")
     table.add_column("Category")
     table.add_column("Amount", justify="right")
@@ -17,6 +18,7 @@ def print_today(rows):
 
     for row in rows:
         table.add_row(
+            str(row["id"]),
             row["ts"][11:16],
             row["category"],
             f"{row['amount']:.2f}",
@@ -36,6 +38,7 @@ def print_today(rows):
 def print_month(rows):
     table = Table(title="Monthly Summary")
 
+    table.add_column("ID", style="cyan")
     table.add_column("Category")
     table.add_column("Total", justify="right")
 
@@ -43,6 +46,7 @@ def print_month(rows):
 
     for row in rows:
         table.add_row(
+            str(row["id"]),
             row["category"],
             f"{row['total']:.2f}"
         )
@@ -61,6 +65,7 @@ def print_month(rows):
 def print_all(rows):
     table = Table(title="Recent Expenses")
 
+    table.add_column("ID", style="cyan")
     table.add_column("Date")
     table.add_column("Category")
     table.add_column("Amount", justify="right")
@@ -68,6 +73,7 @@ def print_all(rows):
 
     for row in rows:
         table.add_row(
+            str(row["id"]),
             row["ts"],
             row["category"],
             f"{row['amount']:.2f}",
