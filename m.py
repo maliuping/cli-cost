@@ -4,6 +4,7 @@ import typer
 
 from core.db import init_db
 from core.models import Expense
+from sync.notion_sync import NotionConfigError, NotionSyncError, sync_notion
 from core.service import (
     add_expense,
     get_today_expenses,
@@ -22,8 +23,23 @@ from core.ui import (
 app = typer.Typer(
     add_completion=False
 )
+sync_app = typer.Typer(help="Sync commands")
+app.add_typer(sync_app, name="sync")
 
 init_db()
+
+
+def _run_notion_sync(limit: int | None):
+    try:
+        count = sync_notion(limit)
+    except NotionConfigError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1)
+    except NotionSyncError as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"Synced {count} records")
 
 
 @app.command()
@@ -109,6 +125,27 @@ def delete(expense_id: int):
     delete_expense(expense_id)
 
     print("Deleted")
+
+
+@sync_app.callback(invoke_without_command=True)
+def sync_root(ctx: typer.Context, limit: int = typer.Option(None, "--limit", help="Limit records to sync")):
+    """
+    Sync expenses to external services
+    """
+
+    if ctx.invoked_subcommand is not None:
+        return
+
+    _run_notion_sync(limit)
+
+
+@sync_app.command("notion")
+def sync_notion_command(limit: int = typer.Option(None, "--limit", help="Limit records to sync")):
+    """
+    Sync unsynced expenses to Notion
+    """
+
+    _run_notion_sync(limit)
 
 
 # -----------------------------

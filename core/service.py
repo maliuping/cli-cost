@@ -1,18 +1,30 @@
 from core.db import get_conn
 from core.models import Expense
-from datetime import datetime
+# from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
+
+LOCAL_TZ = timezone(timedelta(hours=8))
 
 def add_expense(expense: Expense):
     conn = get_conn()
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    ts = datetime.now(LOCAL_TZ).isoformat(timespec="seconds")
 
     conn.execute(
         """
-        INSERT INTO expenses(ts, amount, category, note)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO expenses(ts, amount, category, note, notion_synced, notion_page_id)
+        VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (ts, expense.amount, expense.category, expense.note)
+        (
+            ts,
+            expense.amount,
+            expense.category,
+            expense.note,
+            expense.notion_synced,
+            expense.notion_page_id
+        )
     )
 
     conn.commit()
@@ -36,7 +48,7 @@ def get_today_expenses():
 
 def get_month_summary():
     conn = get_conn()
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     rows = conn.execute("""
         SELECT
@@ -92,5 +104,38 @@ def delete_expense(expense_id: int):
         WHERE id = ?
     """, (expense_id,))
 
+    conn.commit()
+    conn.close()
+
+
+def get_unsynced_expenses(limit: int | None = None):
+    conn = get_conn()
+    query = """
+        SELECT *
+        FROM expenses
+        WHERE COALESCE(notion_synced, 0) = 0
+        ORDER BY ts ASC, id ASC
+    """
+    params = ()
+    if limit is not None:
+        query += " LIMIT ?"
+        params = (limit,)
+
+    rows = conn.execute(query, params).fetchall()
+    conn.close()
+    return rows
+
+
+def mark_expense_synced(expense_id: int, notion_page_id: str):
+    conn = get_conn()
+    conn.execute(
+        """
+        UPDATE expenses
+        SET notion_synced = 1,
+            notion_page_id = ?
+        WHERE id = ?
+        """,
+        (notion_page_id, expense_id)
+    )
     conn.commit()
     conn.close()

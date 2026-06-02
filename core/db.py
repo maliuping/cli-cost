@@ -24,11 +24,30 @@ def init_db():
 
         category TEXT NOT NULL,
 
-        note TEXT
+        note TEXT,
+
+        notion_synced INTEGER DEFAULT 0,
+
+        notion_page_id TEXT
     )
     """)
+
+    _ensure_column(
+        conn,
+        "ALTER TABLE expenses ADD COLUMN notion_synced INTEGER DEFAULT 0"
+    )
+    _ensure_column(
+        conn,
+        "ALTER TABLE expenses ADD COLUMN notion_page_id TEXT"
+    )
 
     conn.commit()
     conn.close()
 
 
+def _ensure_column(conn, ddl: str):
+    try:
+        conn.execute(ddl)
+    except sqlite3.OperationalError as exc:
+        if "duplicate column name" not in str(exc).lower():
+            raise
