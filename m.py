@@ -79,12 +79,15 @@ def today():
 
 
 @app.command()
-def month():
+def month(mon: str = None):
     """
     Show monthly summary
+
+    m month(current month)
+    m month --mon 2026-5
     """
 
-    rows = get_month_summary()
+    rows = get_month_summary(mon)
 
     print_month(rows)
 

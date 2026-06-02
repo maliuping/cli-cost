@@ -46,9 +46,26 @@ def get_today_expenses():
     return rows
 
 
-def get_month_summary():
+def get_month_summary(month=None):
+    if month is None:
+        print("hi")
+        now = datetime.now()
+        year = now.year
+        month = now.month
+    else:
+        year, month = map(int, month.split('-'))
+
+    if month == 12:
+        next_year = year + 1
+        next_month = 1
+    else:
+        next_year = year
+        next_month = month + 1
+
+    start_ts = f"{year:04d}-{month:02d}-01 00:00:00"
+    end_ts = f"{next_year:04d}-{next_month:02d}-01 00:00:00"
+
     conn = get_conn()
-    # ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     rows = conn.execute("""
         SELECT
@@ -56,11 +73,11 @@ def get_month_summary():
             category,
             ROUND(SUM(amount), 2) as total
         FROM expenses
-        WHERE strftime('%Y-%m', ts) =
-              strftime('%Y-%m', 'now', 'localtime')
+        WHERE ts >= ?
+            AND ts < ?
         GROUP BY category
         ORDER BY total DESC
-    """).fetchall()
+        """,(start_ts, end_ts)).fetchall()
 
     conn.close()
 
@@ -139,3 +156,4 @@ def mark_expense_synced(expense_id: int, notion_page_id: str):
     )
     conn.commit()
     conn.close()
+
