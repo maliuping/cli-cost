@@ -1,7 +1,9 @@
 from pathlib import Path
 import sqlite3
 
-DB_DIR = Path("data")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+DB_DIR = PROJECT_ROOT / "data"
 DB_DIR.mkdir(exist_ok=True)
 
 DB_PATH = DB_DIR / "money.db"
