@@ -48,7 +48,6 @@ def get_today_expenses():
 
 def get_month_summary(month=None):
     if month is None:
-        print("hi")
         now = datetime.now()
         year = now.year
         month = now.month
@@ -64,6 +63,35 @@ def get_month_summary(month=None):
 
     start_ts = f"{year:04d}-{month:02d}-01 00:00:00"
     end_ts = f"{next_year:04d}-{next_month:02d}-01 00:00:00"
+
+    conn = get_conn()
+
+    rows = conn.execute("""
+        SELECT
+            id,
+            category,
+            ROUND(SUM(amount), 2) as total
+        FROM expenses
+        WHERE ts >= ?
+            AND ts < ?
+        GROUP BY category
+        ORDER BY total DESC
+        """,(start_ts, end_ts)).fetchall()
+
+    conn.close()
+
+    return rows
+
+
+def get_summary_by_time(start_ts, end_ts):
+    if start_ts is None or end_ts is None:
+        raise ValueError("start_ts and end_ts are required")
+
+    start_year, start_month, start_day = map(int, start_ts.split('-'))
+    end_year, end_month, end_day = map(int, end_ts.split('-'))
+
+    start_ts = f"{start_year:04d}-{start_month:02d}-{start_day:02d} 00:00:00"
+    end_ts = f"{end_year:04d}-{end_month:02d}-{end_day:02d} 00:00:00"
 
     conn = get_conn()
 

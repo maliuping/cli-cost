@@ -11,12 +11,14 @@ from core.service import (
     get_month_summary,
     get_all_expenses,
     delete_expense,
-    get_expense_by_id
+    get_expense_by_id,
+    get_summary_by_time
 )
 
 from core.ui import (
     print_today,
     print_month,
+    print_range,
     print_all
 )
 
@@ -27,6 +29,8 @@ sync_app = typer.Typer(help="Sync commands")
 app.add_typer(sync_app, name="sync")
 
 init_db()
+
+
 
 
 def _run_notion_sync(limit: int | None):
@@ -128,6 +132,20 @@ def delete(expense_id: int):
     delete_expense(expense_id)
 
     print("Deleted")
+
+@app.command()
+def seek(
+    s_ts: str = typer.Option(..., help="start date"),
+    e_ts: str = typer.Option(..., help="end date"),
+):
+    """
+    Seek expense summary by time
+
+    m seek --s-ts 2026-5-1 --e-ts 2026-5-31
+    """
+    rows = get_summary_by_time(s_ts, e_ts)
+
+    print_range(rows)
 
 
 @sync_app.callback(invoke_without_command=True)
