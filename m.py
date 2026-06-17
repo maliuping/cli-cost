@@ -12,7 +12,8 @@ from core.service import (
     get_all_expenses,
     delete_expense,
     get_expense_by_id,
-    get_summary_by_time
+    get_summary_by_time,
+    update_expense_by_id
 )
 
 from core.ui import (
@@ -141,7 +142,8 @@ def seek(
     """
     Seek expense summary by time
 
-    m seek --s-ts 2026-5-1 --e-ts 2026-5-31
+    [--s-ts --e-ts)
+    m seek --s-ts 2026-5-1 --e-ts 2026-6-1
     """
     rows = get_summary_by_time(s_ts, e_ts)
 
@@ -167,6 +169,38 @@ def sync_notion_command(limit: int = typer.Option(None, "--limit", help="Limit r
     """
 
     _run_notion_sync(limit)
+
+@app.command()
+def edit(
+        expense_id: int,
+        amount: float|None = typer.Option(None),
+        category: str|None = typer.Option(None),
+        note: str|None = typer.Option(None),
+        ts: str|None = typer.Option(None)
+        ):
+
+    """
+    Edit expense by expense_id
+
+    Examples:
+
+    m edit 1 --amount 35.5
+    m edit 1 --category lunch
+    m edit 1 --note "family"
+    m edit 1 --amount 35.5 --category lunch
+    """
+
+    ok = update_expense_by_id(
+            expense_id,
+            amount,
+            category,
+            note
+            )
+
+    if ok:
+        print(f"Expense #{expense_id} updated")
+    else:
+        print(f"Expense #{expense_id} not found or nothing changed")
 
 
 # -----------------------------

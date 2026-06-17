@@ -185,3 +185,58 @@ def mark_expense_synced(expense_id: int, notion_page_id: str):
     conn.commit()
     conn.close()
 
+def update_expense_by_id(
+        expense_id: int,
+        amount: float|None = None,
+        category: str|None = None,
+        note: str|None = None,
+        ts: str|None = None
+        )->bool:
+
+
+    updates = []
+    params = []
+
+    if amount is not None:
+        updates.append("amount = ?")
+        params.append(amount)
+
+    if category is not None:
+        updates.append("category = ?")
+        params.append(category)
+
+    if note is not None:
+        updates.append("note = ?")
+        params.append(note)
+
+    if ts is not None:
+        updates.append("ts = ?")
+        params.append(ts)
+
+    if updates is None:
+        return False
+
+    params.append(expense_id)
+
+    conn = get_conn()
+
+    cursor = conn.execute(
+        f"""
+        UPDATE expenses
+        SET {", ".join(updates)}
+        WHERE id = ?
+        """,
+        params,
+    )
+
+    conn.commit()
+
+    updated = cursor.rowcount > 0
+
+    conn.close()
+
+    return updated
+
+
+
+
